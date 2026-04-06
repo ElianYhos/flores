@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body{
+    margin:0;
+    background:#121212;
+    overflow:hidden;
+    font-family:sans-serif;
+}
+
+/* CANVAS */
+#canvas{
+    position:relative;
+    width:100%;
+    height:70vh;
+}
+
+/* TALLOS */
+.stem{
+    position:absolute;
+    width:2px;
+    background:#3aa76d;
+    transform-origin: bottom center;
+    opacity:0;
+    animation:grow 0.6s forwards;
+}
+
+@keyframes grow{
+    from{height:0;opacity:0;}
+    to{height:var(--h);opacity:1;}
+}
+
+/* FLORES */
+.flower{
+    position:absolute;
+    font-size:20px;
+    opacity:0;
+    animation:bloom 0.5s forwards;
+}
+
+@keyframes bloom{
+    to{opacity:1; transform:scale(1.2);}
+}
+
+/* BASE DEL RAMO */
+.base{
+    position:absolute;
+    bottom:0;
+    left:50%;
+    transform:translateX(-50%);
+    width:10px;
+    height:10px;
+}
+
+/* TECLADO */
+#keyboard{
+    display:grid;
+    grid-template-columns:repeat(10,1fr);
+    gap:5px;
+    padding:8px;
+    background:#1c1c1c;
+}
+
+.key{
+    background:#333;
+    color:#ccc;
+    text-align:center;
+    font-size:10px;
+    border-radius:5px;
+    padding:3px;
+}
+
+.key::before{
+    content:attr(data-flower);
+    display:block;
+}
+
+.active{
+    background:#ff4d8d;
+    box-shadow:0 0 10px pink;
+}
+
+/* TEXTOS */
+#textos{
+    text-align:center;
+    color:white;
+}
+
+#sub1{color:#ff4d4d;}
+</style>
+</head>
+
+<body>
+
+<div id="canvas">
+    <div class="base" id="base"></div>
+</div>
+
+<div id="textos">
+    <div id="sub1"></div>
+    <div id="sub2"></div>
+</div>
+
+<div id="keyboard"></div>
+
+<script>
+// 🌸 mapa
+const flowerMap={
+a:"🌸",b:"🌼",c:"🌷",d:"🌹",e:"🌺",
+f:"🌻",g:"🌸",h:"🌷",i:"🌼",j:"🌹",
+k:"🌺",l:"🌻",m:"🌸",n:"🌷",o:"🌼",
+p:"🌹",q:"🌺",r:"🌻",s:"🌸",t:"🌷",
+u:"🌼",v:"🌹",w:"🌺",x:"🌻",y:"🌸",z:"🌷"
+};
+
+const texto="elian yhoselin";
+
+const canvas=document.getElementById("canvas");
+const base=document.getElementById("base");
+const keyboard=document.getElementById("keyboard");
+
+// teclado
+Object.keys(flowerMap).forEach(l=>{
+    let k=document.createElement("div");
+    k.className="key";
+    k.id="key-"+l;
+    k.setAttribute("data-flower",flowerMap[l]);
+    k.innerHTML=l.toUpperCase();
+    keyboard.appendChild(k);
+});
+
+// 🌿 crear ramo real
+function crearFlor(i,total){
+
+    let centerX=window.innerWidth/2;
+
+    // abanico
+    let angleSpread=60; 
+    let angle=(i-(total/2))*(angleSpread/total);
+
+    let height=140+Math.random()*40;
+
+    let stem=document.createElement("div");
+    stem.className="stem";
+    stem.style.left=centerX+"px";
+    stem.style.bottom="0px";
+    stem.style.setProperty("--h",height+"px");
+    stem.style.transform=`rotate(${angle}deg)`;
+
+    canvas.appendChild(stem);
+
+    // posición final de la flor
+    let rad=angle*Math.PI/180;
+
+    let x=centerX + Math.sin(rad)*height;
+    let y=height;
+
+    let flor=document.createElement("div");
+    flor.className="flower";
+    flor.textContent=flowerMap[texto[i]];
+
+    flor.style.left=(x-10)+"px";
+    flor.style.bottom=y+"px";
+
+    canvas.appendChild(flor);
+}
+
+const delay=ms=>new Promise(r=>setTimeout(r,ms));
+
+// animación
+async function escribir(){
+    let i=0;
+
+    for(let letra of texto){
+
+        if(letra===" "){
+            i++;
+            await delay(300);
+            continue;
+        }
+
+        let key=document.getElementById("key-"+letra);
+        key.classList.add("active");
+
+        crearFlor(i,texto.length);
+
+        await delay(400);
+
+        key.classList.remove("active");
+        i++;
+    }
+
+    textos();
+}
+
+// textos
+async function textos(){
+    let s1="Mi hilo rojo";
+    let s2="Espero que tengas un gran día mi amor ❤️";
+
+    let t1=document.getElementById("sub1");
+    let t2=document.getElementById("sub2");
+
+    for(let l of s1){
+        t1.textContent+=l;
+        await delay(80);
+    }
+
+    for(let l of s2){
+        t2.textContent+=l;
+        await delay(40);
+    }
+}
+
+escribir();
+</script>
+
+</body>
+</html>
